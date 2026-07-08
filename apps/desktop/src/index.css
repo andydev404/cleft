@@ -1,0 +1,197 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Exact toast keyframe from the design (CopyFlow.dc.html) — the design has
+   no delete UI, but this toast component is the closest existing pattern
+   to reuse for delete feedback. */
+@keyframes cfToast {
+    0% { opacity: 0; transform: translate(-50%, 10px); }
+    12% { opacity: 1; transform: translate(-50%, 0); }
+    88% { opacity: 1; transform: translate(-50%, 0); }
+    100% { opacity: 0; transform: translate(-50%, -6px); }
+}
+
+@theme inline {
+    --font-heading: var(--font-sans);
+    --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Fira Code", Menlo, monospace;
+    --color-text-tertiary: var(--text-tertiary);
+    --color-success: var(--success);
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar: var(--sidebar);
+    --color-chart-5: var(--chart-5);
+    --color-chart-4: var(--chart-4);
+    --color-chart-3: var(--chart-3);
+    --color-chart-2: var(--chart-2);
+    --color-chart-1: var(--chart-1);
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --color-foreground: var(--foreground);
+    --color-background: var(--background);
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+    --radius-2xl: calc(var(--radius) * 1.8);
+    --radius-3xl: calc(var(--radius) * 2.2);
+    --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* Tokens imported from the CopyFlow design (claude.ai/design project
+   0adda60b-a918-4974-820c-c986d8196476) — light/dark values taken directly
+   from its tokens() function rather than re-derived, so this stays a
+   faithful import instead of a re-interpretation. */
+:root {
+    /* Originally much lower alpha (0.45/0.5) on the theory that native
+       macOS vibrancy needed the HTML content to stay mostly translucent
+       or it'd cover the blur — but in practice that let whatever's behind
+       the window (busy wallpaper, other windows) bleed through and
+       compete with the text, which is what was actually making light mode
+       hard to read, more than any single color's contrast ratio. Raised
+       enough that the surface reads as a legible near-solid panel; still
+       shy of fully opaque so a hint of the vibrancy blur survives at the
+       edges. */
+    --background: rgba(252, 252, 254, 0.9);
+    --foreground: #15151c;
+    --card: rgba(255, 255, 255, 0.94);
+    --card-foreground: #15151c;
+    --popover: rgba(252, 252, 254, 0.94);
+    --popover-foreground: #15151c;
+    --primary: #2563eb;
+    --primary-foreground: #ffffff;
+    /* Light-mode full pass, all measured against a white-ish backdrop
+       (this app's actual background is a translucent vibrancy surface,
+       which is close to white in light mode — WCAG contrast ratios below
+       are computed against #fff as the practical baseline):
+       - fills (secondary/muted/accent) were 3.5-4.5% opacity — barely
+         perceptible, so a button's resting/hover state didn't read as a
+         button at all. Roughly doubled.
+       - borders (border/border-2/input) were 8-14% opacity — a button or
+         input's outline was nearly invisible against the surface.
+         Bumped ~2x so shapes are actually visible at rest, not just on
+         hover/focus. */
+    --secondary: rgba(12, 16, 42, 0.08);
+    --secondary-foreground: #15151c;
+    --muted: rgba(12, 16, 42, 0.08);
+    --muted-foreground: #585866;
+    /* #8a8a96 (the design's original value) only hits 3.4:1 contrast
+       against a white-ish background — well under the 4.5:1 AA threshold
+       for normal text, and this token carries most of the app's small
+       text (timestamps, subtitles, placeholders, badges). Darkened to
+       ~5:1, same cool-gray hue. */
+    --text-tertiary: #6e6e78;
+    --success: #34c759;
+    --toast-bg: rgba(255, 255, 255, 0.95);
+    --toast-fg: #15151c;
+    --row-sel: rgba(12, 16, 42, 0.09);
+    --accent: rgba(12, 16, 42, 0.07);
+    --accent-foreground: #15151c;
+    /* #e5614f (the design's original value) only hits 3.4:1 against
+       white — the same borderline-failing pattern as text-tertiary above,
+       and this is the color used for delete/destructive button *text*,
+       not just a decorative accent. Darkened/saturated slightly to ~5:1,
+       same hue. */
+    --destructive: #c73e2c;
+    --border: rgba(12, 16, 42, 0.16);
+    --border-2: rgba(12, 16, 42, 0.28);
+    --shadow: 0 40px 100px -26px rgba(28, 38, 78, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 0 0 1px rgba(12, 16, 42, 0.05);
+    --input: rgba(12, 16, 42, 0.16);
+    --ring: #2563eb;
+    --chart-1: oklch(0.87 0 0);
+    --chart-2: oklch(0.556 0 0);
+    --chart-3: oklch(0.439 0 0);
+    --chart-4: oklch(0.371 0 0);
+    --chart-5: oklch(0.269 0 0);
+    --radius: 0.75rem;
+    --sidebar: rgba(0, 0, 0, 0.01);
+    --sidebar-foreground: #15151c;
+    --sidebar-primary: #2563eb;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: rgba(12, 16, 42, 0.08);
+    --sidebar-accent-foreground: #15151c;
+    --sidebar-border: rgba(12, 16, 42, 0.16);
+    --sidebar-ring: #2563eb;
+}
+
+.dark {
+    /* See the :root comment above — lower alpha than the design's values
+       since native vibrancy provides the blur now, not CSS. */
+    --background: rgba(23, 23, 27, 0.45);
+    --foreground: #ededf0;
+    --card: rgba(255, 255, 255, 0.06);
+    --card-foreground: #ededf0;
+    --popover: rgba(23, 23, 27, 0.45);
+    --popover-foreground: #ededf0;
+    --primary: #2563eb;
+    --primary-foreground: #ffffff;
+    --secondary: rgba(255, 255, 255, 0.055);
+    --secondary-foreground: #ededf0;
+    --muted: rgba(255, 255, 255, 0.055);
+    --muted-foreground: #9fa0ab;
+    --text-tertiary: #67686f;
+    --success: #34c759;
+    --toast-bg: rgba(28, 28, 32, 0.92);
+    --toast-fg: #ededf0;
+    --row-sel: rgba(255, 255, 255, 0.075);
+    --accent: rgba(255, 255, 255, 0.04);
+    --accent-foreground: #ededf0;
+    --destructive: #e5614f;
+    --border: rgba(255, 255, 255, 0.07);
+    --border-2: rgba(255, 255, 255, 0.12);
+    --shadow: 0 40px 100px -24px rgba(0, 0, 0, 0.74), inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.04);
+    --input: rgba(255, 255, 255, 0.07);
+    --ring: #2563eb;
+    --chart-1: oklch(0.87 0 0);
+    --chart-2: oklch(0.556 0 0);
+    --chart-3: oklch(0.439 0 0);
+    --chart-4: oklch(0.371 0 0);
+    --chart-5: oklch(0.269 0 0);
+    --sidebar: rgba(255, 255, 255, 0.012);
+    --sidebar-foreground: #ededf0;
+    --sidebar-primary: #2563eb;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: rgba(255, 255, 255, 0.055);
+    --sidebar-accent-foreground: #ededf0;
+    --sidebar-border: rgba(255, 255, 255, 0.07);
+    --sidebar-ring: #2563eb;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    }
+  /* The Tauri window itself is transparent (see tauri.conf.json) so the
+     rounded/blurred surface painted by <main>/<PermissionRunway> reads as a
+     floating native panel, not a rectangle — html/body must stay fully
+     transparent or they'd paint a square behind those rounded corners. */
+  html, body {
+    background: transparent;
+    color: var(--foreground);
+    }
+  html {
+    @apply font-sans;
+    }
+}
