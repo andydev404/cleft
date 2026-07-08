@@ -1,6 +1,6 @@
 # Cleft
 
-A fast, privacy-first clipboard manager for macOS. Press <kbd>⌘⇧V</kbd> anywhere to open a Spotlight-style palette with everything you've copied — searchable, organized, and stored entirely on your machine.
+A fast, privacy-first clipboard manager for macOS and Windows. Press <kbd>⌘⇧V</kbd> (<kbd>Ctrl⇧V</kbd> on Windows) anywhere to open a Spotlight-style palette with everything you've copied — searchable, organized, and stored entirely on your machine.
 
 ## Features
 
@@ -15,13 +15,13 @@ A fast, privacy-first clipboard manager for macOS. Press <kbd>⌘⇧V</kbd> anyw
 
 ## Install
 
-Download the latest release from [Releases](https://github.com/andydev404/cleft/releases), or build from source (below). Requires macOS.
+Download the latest release for your platform from [Releases](https://github.com/andydev404/cleft/releases), or build from source (below).
 
 ## Development
 
 This is a bun-workspaces monorepo: the desktop app lives in `apps/desktop`, the landing page in `apps/web`.
 
-Prerequisites: [Bun](https://bun.sh), [Rust](https://rustup.rs), and Xcode Command Line Tools.
+Prerequisites: [Bun](https://bun.sh), [Rust](https://rustup.rs), and your platform's build tools (Xcode Command Line Tools on macOS, [Tauri's Windows prerequisites](https://tauri.app/start/prerequisites/) on Windows).
 
 ```sh
 bun install              # once, at the repo root

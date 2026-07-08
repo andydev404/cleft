@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 use tauri::{AppHandle, Manager};
 
+#[cfg(target_os = "macos")]
 const TEMPLATE: &str = "\
 # Add bundle IDs of apps you never want captured
 # Find an app's bundle ID: mdls -name kMDItemCFBundleIdentifier /Applications/AppName.app
@@ -8,6 +9,19 @@ const TEMPLATE: &str = "\
 # com.apple.Terminal
 # com.iterm2.iTerm2
 # com.yourcompany.internal-tool
+";
+
+// Windows has no bundle-id concept — the identifier here is the
+// lowercased executable name (see frontmost_app.rs), which is what a
+// user would find in Task Manager's "Details" tab.
+#[cfg(not(target_os = "macos"))]
+const TEMPLATE: &str = "\
+# Add executable names of apps you never want captured (lowercase, as
+# shown in Task Manager's Details tab)
+#
+# cmd.exe
+# powershell.exe
+# internal-tool.exe
 ";
 
 fn path(app_handle: &AppHandle) -> PathBuf {

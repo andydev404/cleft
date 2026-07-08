@@ -13,7 +13,18 @@ pub fn change_count() -> isize {
     pasteboard.changeCount()
 }
 
-#[cfg(not(target_os = "macos"))]
+// GetClipboardSequenceNumber is the direct Windows equivalent of
+// NSPasteboard.changeCount — a system-wide counter incremented on every
+// clipboard change, readable without opening the clipboard (no risk of
+// contending with whatever app just wrote to it).
+#[cfg(target_os = "windows")]
+pub fn change_count() -> isize {
+    use windows::Win32::System::DataExchange::GetClipboardSequenceNumber;
+
+    unsafe { GetClipboardSequenceNumber() as isize }
+}
+
+#[cfg(not(any(target_os = "macos", target_os = "windows")))]
 pub fn change_count() -> isize {
     0
 }

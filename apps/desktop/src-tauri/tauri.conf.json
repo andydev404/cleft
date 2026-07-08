@@ -22,7 +22,8 @@
         "alwaysOnTop": true,
         "visible": false,
         "center": true,
-        "label": "main"
+        "label": "main",
+        "skipTaskbar": true
       }
     ],
     "security": {

@@ -1,7 +1,7 @@
 [package]
 name = "cleft"
 version = "0.1.0"
-description = "A fast, privacy-first clipboard manager for macOS"
+description = "A fast, privacy-first clipboard manager for macOS and Windows"
 authors = ["Andy Santana"]
 license = "MIT"
 repository = "https://github.com/andydev404/cleft"
@@ -48,4 +48,21 @@ objc2-foundation = { version = "0.3", default-features = false, features = [
 security-framework = "3"
 core-foundation = "0.10"
 window-vibrancy = "0.5"
+
+[target.'cfg(target_os = "windows")'.dependencies]
+window-vibrancy = "0.5"
+windows = { version = "0.58", features = [
+    "Win32_Foundation",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_System_DataExchange",
+    "Win32_System_Threading",
+] }
+# Windows Credential Manager, for the DB encryption key — using this
+# instead of hand-rolled CREDENTIALW FFI, which isn't something to get
+# subtly wrong in code that can't be compile-checked in this environment
+# (no Windows cross-toolchain available here — see the CI job instead).
+# keyring v3 ships NO keystore by default — without the windows-native
+# feature, Entry::new has no backing store and the DB key would not
+# persist across launches (rendering the encrypted DB unreadable).
+keyring = { version = "3", features = ["windows-native"] }
 

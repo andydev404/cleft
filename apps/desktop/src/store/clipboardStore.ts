@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { invoke } from "@tauri-apps/api/core";
 import { useToastStore } from "@/store/toastStore";
+import { modKey } from "@/lib/platform";
 import type { ClipMetadata } from "@/types";
 
 interface ClipboardState {
@@ -125,7 +126,7 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
     const content = await invoke<string | null>("get_clip_content", { id: clip.id });
     if (!content) return;
     invoke("copy_to_clipboard", { text: content });
-    useToastStore.getState().show("Copied — press ⌘V to paste");
+    useToastStore.getState().show(`Copied — press ${modKey}V to paste`);
     invoke("hide_palette");
   },
 

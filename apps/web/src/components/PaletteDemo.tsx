@@ -11,7 +11,7 @@ interface Clip {
 }
 
 const CLIPS: Clip[] = [
-  { app: "Figma", letter: "F", color: "#9b54ff", preview: "#4F7DFF", badge: "COLOR", badgeColor: "#4f7dff" },
+  { app: "Figma", letter: "F", color: "#9b54ff", preview: "#FF6B35", badge: "COLOR", badgeColor: "#ff8a4c" },
   { app: "Terminal", letter: "T", color: "#1d8a5b", preview: "git rebase -i origin/main", badge: "CODE", badgeColor: "#46b29d" },
   { app: "Safari", letter: "S", color: "#3a8ee6", preview: "stripe.com/docs/api/charges", badge: "URL", badgeColor: "#7c9cff" },
   { app: "TablePlus", letter: "T", color: "#e0a23c", preview: "SELECT * FROM orders WHERE…", badge: "SQL", badgeColor: "#e0a23c" },

@@ -5,7 +5,14 @@ use tauri::{App, Emitter};
 use crate::palette::{show_palette, toggle_palette};
 
 pub fn init(app: &App) -> tauri::Result<()> {
-    let open_item = MenuItem::with_id(app, "open", "Open Cleft", true, Some("Cmd+Shift+V"))?;
+    #[cfg(target_os = "macos")]
+    let accelerator = "Cmd+Shift+V";
+    #[cfg(not(target_os = "macos"))]
+    let accelerator = "Ctrl+Shift+V";
+    let open_item = MenuItem::with_id(app, "open", "Open Cleft", true, Some(accelerator))?;
+    // The Accessibility permission only exists on macOS — no dead
+    // "Permissions…" entry on other platforms.
+    #[cfg(target_os = "macos")]
     let permissions_item =
         MenuItem::with_id(app, "permissions", "Permissions…", true, None::<&str>)?;
     let update_item = MenuItem::with_id(
@@ -16,17 +23,18 @@ pub fn init(app: &App) -> tauri::Result<()> {
         None::<&str>,
     )?;
     let quit_item = PredefinedMenuItem::quit(app, Some("Quit Cleft"))?;
-    let menu = Menu::with_items(
-        app,
-        &[
-            &open_item,
-            &PredefinedMenuItem::separator(app)?,
-            &permissions_item,
-            &update_item,
-            &PredefinedMenuItem::separator(app)?,
-            &quit_item,
-        ],
-    )?;
+    let separator_top = PredefinedMenuItem::separator(app)?;
+    let separator_bottom = PredefinedMenuItem::separator(app)?;
+
+    let mut items: Vec<&dyn tauri::menu::IsMenuItem<tauri::Wry>> = vec![&open_item, &separator_top];
+    #[cfg(target_os = "macos")]
+    items.push(&permissions_item);
+    items.extend([
+        &update_item as &dyn tauri::menu::IsMenuItem<tauri::Wry>,
+        &separator_bottom,
+        &quit_item,
+    ]);
+    let menu = Menu::with_items(app, &items)?;
 
     // Not a template image — the icon is a full-color logo, not a
     // monochrome alpha mask, so `icon_as_template` would render a blob.

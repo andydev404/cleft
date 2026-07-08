@@ -21,7 +21,14 @@ export const useRunwayStore = create<RunwayState>((set, get) => ({
   init: async () => {
     const isTrusted = await invoke<boolean>("check_accessibility_trusted");
     set({ trusted: isTrusted });
-    if (!isTrusted && localStorage.getItem(PERMISSION_ASKED_KEY) !== "true") {
+    if (isTrusted) {
+      // Already trusted on first launch — always the case on Windows,
+      // where no Accessibility permission exists. Mark onboarded now or
+      // lib.rs would force-show the palette on every startup. Idempotent.
+      invoke("mark_onboarded");
+      return;
+    }
+    if (localStorage.getItem(PERMISSION_ASKED_KEY) !== "true") {
       localStorage.setItem(PERMISSION_ASKED_KEY, "true");
       // Mark onboarded regardless of what the user does with the system
       // dialog — this only gates "reveal the window unprompted on first

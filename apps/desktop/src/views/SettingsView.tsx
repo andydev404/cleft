@@ -1,5 +1,6 @@
 import { ViewHeader } from "@/components/ViewHeader";
 import { useSettingsStore } from "@/store/settingsStore";
+import { modKey } from "@/lib/platform";
 
 // Privacy & Security below describes the 4 layers actually implemented in
 // src-tauri/src/sensitive.rs + blocklist.rs — this section is accurate, not
@@ -34,7 +35,7 @@ const DEFENSE_LAYERS = [
 ];
 
 const SHORTCUTS = [
-  { name: "Open clipboard", keys: ["⌘", "⇧", "V"] },
+  { name: "Open clipboard", keys: [modKey, "⇧", "V"] },
   { name: "Close", keys: ["⎋"] },
 ];
 

@@ -7,6 +7,7 @@ import { PreviewPane } from "@/components/PreviewPane";
 import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 import { useClipboardStore } from "@/store/clipboardStore";
 import { useConfirmStore } from "@/store/confirmStore";
+import { isMac } from "@/lib/platform";
 import type { ClipMetadata } from "@/types";
 
 const SEARCH_DEBOUNCE_MS = 50;
@@ -88,7 +89,7 @@ export function ClipboardView() {
       // No selection yet → copy the top result, Spotlight-style.
       const target = selected ?? visible[0];
       if (target) copyClip(target);
-    } else if (e.metaKey && /^[1-9]$/.test(e.key)) {
+    } else if ((isMac ? e.metaKey : e.ctrlKey) && /^[1-9]$/.test(e.key)) {
       e.preventDefault();
       const target = visible[Number(e.key) - 1];
       if (target) copyClip(target);

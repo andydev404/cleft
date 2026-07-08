@@ -3,7 +3,11 @@ use std::collections::HashMap;
 use std::sync::LazyLock;
 
 // Layer 1 — hardcoded, not user-editable. If the frontmost app matches,
-// the poll cycle skips before the clipboard is ever read.
+// the poll cycle skips before the clipboard is ever read. macOS entries
+// are bundle IDs (exact case, from NSWorkspace); Windows has no bundle-id
+// concept, so frontmost_app::current() uses the lowercased executable
+// name there instead — the Windows entries below are pre-lowercased to
+// match.
 const BLOCKED_BUNDLE_IDS: &[&str] = &[
     "com.1password.1password",
     "com.bitwarden.desktop",
@@ -13,14 +17,24 @@ const BLOCKED_BUNDLE_IDS: &[&str] = &[
     "com.strongbox.mac",
     "com.dashlane.dashlanephoneapp",
     "com.lastpass.LastPass",
+    "1password.exe",
+    "bitwarden.exe",
+    "keepassxc.exe",
+    "keepass.exe",
+    "dashlane.exe",
+    "lastpass.exe",
+    "credwiz.exe",
 ];
 
 // Narrow allowlist of apps OTP codes plausibly come from, so a random
 // 6-8 digit clip (a PIN, a zip code) isn't blocked everywhere.
+// "phoneexperiencehost.exe" is Microsoft Phone Link — the Windows
+// equivalent of Messages as the place SMS codes get copied from.
 const OTP_SOURCE_BUNDLE_IDS: &[&str] = &[
     "com.apple.MobileSMS",
     "com.authy.authy",
     "com.google.authenticator",
+    "phoneexperiencehost.exe",
 ];
 
 pub fn is_blocked_app(bundle_id: &str) -> bool {

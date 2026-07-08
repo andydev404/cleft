@@ -15,9 +15,12 @@ bun run desktop:dev   # the app
 bun run web:dev       # the landing page
 ```
 
-You need macOS, [Bun](https://bun.sh), [Rust](https://rustup.rs), and Xcode
-Command Line Tools. Context capture requires granting Accessibility permission
-to the dev build the first time it runs.
+You need [Bun](https://bun.sh), [Rust](https://rustup.rs), and your platform's
+build tools (Xcode Command Line Tools on macOS). On macOS, context capture
+requires granting Accessibility permission to the dev build the first time it
+runs. Note: the platform layer (`pasteboard.rs`, `frontmost_app.rs`, `ax.rs`)
+currently has macOS implementations only — Windows equivalents are a welcome
+contribution.
 
 ## Before you open a PR
 

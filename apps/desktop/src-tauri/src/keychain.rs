@@ -28,7 +28,26 @@ pub fn get_or_create_db_key() -> String {
     key
 }
 
-#[cfg(not(target_os = "macos"))]
+// Windows Credential Manager, via the `keyring` crate rather than hand-
+// rolled CREDENTIALW FFI — same SERVICE/ACCOUNT pair as the macOS Keychain
+// entry above, just a different backing store.
+#[cfg(target_os = "windows")]
 pub fn get_or_create_db_key() -> String {
-    unimplemented!("Keychain-backed encryption is macOS-only in V1")
+    use keyring::Entry;
+
+    let entry = Entry::new(SERVICE, ACCOUNT).expect("failed to access Windows Credential Manager");
+    if let Ok(key) = entry.get_password() {
+        return key;
+    }
+
+    let key = generate_key();
+    entry
+        .set_password(&key)
+        .expect("failed to store db encryption key in Windows Credential Manager");
+    key
+}
+
+#[cfg(not(any(target_os = "macos", target_os = "windows")))]
+pub fn get_or_create_db_key() -> String {
+    unimplemented!("Keychain-backed encryption is macOS/Windows-only in V1")
 }

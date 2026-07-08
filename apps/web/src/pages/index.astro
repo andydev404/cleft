@@ -7,15 +7,22 @@ const REPO_URL = 'https://github.com/andydev404/cleft';
 ---
 
 <Layout
-  title="Cleft — the clipboard manager for macOS that remembers everything"
-  description="Your Mac's clipboard holds one item. Cleft keeps everything you copy — searchable, organized, and stored only on your Mac. Free, open source, no account."
+  title="Cleft — the clipboard manager that remembers everything"
+  description="Your clipboard holds one item. Cleft keeps everything you copy — searchable, organized, and stored only on your device. Free and open source for macOS and Windows."
 >
+  <div class="scroll-progress" aria-hidden="true"></div>
   <nav class="nav">
     <div class="wrap nav-inner">
       <a class="brand" href="/">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <rect x="3" y="3" width="18" height="18" rx="5" fill="#4f7dff" />
-          <path d="M12 3v6l2.5-2L17 9V3" fill="#0d1117" />
+          <defs>
+            <linearGradient id="brand-g" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#ffa02b" />
+              <stop offset="1" stop-color="#ff5f2e" />
+            </linearGradient>
+          </defs>
+          <rect x="3" y="3" width="18" height="18" rx="5" fill="url(#brand-g)" />
+          <path d="M12 3v6l2.5-2L17 9V3" fill="#08090c" />
         </svg>
         Cleft
       </a>
@@ -26,32 +33,77 @@ const REPO_URL = 'https://github.com/andydev404/cleft';
     </div>
   </nav>
 
-  <header class="wrap hero">
-    <div>
-      <p class="eyebrow" data-hero>Free & open source · macOS</p>
+  <header class="hero">
+    <div class="glyph-field" aria-hidden="true">
+      <i style="top:14%;left:9%;font-size:22px;opacity:.10">⌘</i>
+      <i style="top:32%;left:16%;font-size:13px;opacity:.07;filter:blur(1px)">{'{ }'}</i>
+      <i style="top:58%;left:7%;font-size:17px;opacity:.09">#</i>
+      <i style="top:76%;left:14%;font-size:14px;opacity:.06;filter:blur(1.5px)">→</i>
+      <i style="top:22%;left:26%;font-size:15px;opacity:.06;filter:blur(1px)">⇧</i>
+      <i style="top:11%;right:11%;font-size:19px;opacity:.10">V</i>
+      <i style="top:30%;right:20%;font-size:14px;opacity:.07;filter:blur(1px)">//</i>
+      <i style="top:52%;right:8%;font-size:22px;opacity:.09">⌘</i>
+      <i style="top:70%;right:16%;font-size:13px;opacity:.06;filter:blur(1.5px)">:=</i>
+      <i style="top:44%;right:28%;font-size:15px;opacity:.05;filter:blur(2px)">⌫</i>
+      <i style="top:84%;left:31%;font-size:16px;opacity:.07;filter:blur(1px)">$</i>
+      <i style="top:86%;right:30%;font-size:14px;opacity:.06;filter:blur(1px)">&lt;/&gt;</i>
+    </div>
+    <div class="hero-inner">
+      <p class="pill" data-hero><span class="pill-dot"></span>Free & open source · macOS & Windows</p>
       <h1 data-hero>
-        Your Mac forgets what you copy. <em>Cleft doesn't.</em>
+        Your computer forgets what you copy. <em>Cleft doesn't.</em>
       </h1>
       <p class="hero-sub" data-hero>
         Every copy overwrites the last one — the address, the code, the color you needed again ten
-        minutes later. Cleft keeps them all. Press <kbd>⌘</kbd><kbd>⇧</kbd><kbd>V</kbd> anywhere and
+        minutes later. Cleft keeps them all. Press <kbd>⌘</kbd><kbd>⇧</kbd><kbd>V</kbd> —
+        <kbd>Ctrl</kbd><kbd>⇧</kbd><kbd>V</kbd> on Windows — and
         <strong>everything you've ever copied is right there</strong> — searchable, organized, and
-        stored only on your Mac.
+        stored only on your machine.
       </p>
       <div class="hero-ctas" data-hero>
-        <a class="btn btn-primary" href={DOWNLOAD_URL} rel="noopener">Download for macOS</a>
+        <a class="btn btn-primary" href={DOWNLOAD_URL} rel="noopener">Download free</a>
         <a class="btn btn-ghost" href={REPO_URL} rel="noopener">Read the source</a>
       </div>
       <p class="hero-fineprint" data-hero>
-        <b>Free forever.</b> MIT licensed · No account · No telemetry
+        <b>macOS & Windows.</b> MIT licensed · No account · No telemetry
       </p>
     </div>
-    <PaletteDemo client:load />
+    <div class="demo-stage" data-hero>
+      <div class="echoes" aria-hidden="true"><i></i><i></i><i></i></div>
+      <span class="float-chip" style="top:-8px;left:-170px" aria-hidden="true"><span class="fc-dot" style="background:#ff8a4c"></span>#FF6B35</span>
+      <span class="float-chip" style="top:110px;right:-200px" aria-hidden="true"><span class="fc-dot" style="background:#46b29d"></span>git rebase -i</span>
+      <span class="float-chip" style="bottom:140px;left:-215px" aria-hidden="true"><span class="fc-dot" style="background:#b06cff"></span>{'{"ok":true}'}</span>
+      <div class="demo-tilt">
+        <div class="demo-zoom">
+          <PaletteDemo client:load />
+        </div>
+      </div>
+    </div>
   </header>
+
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+      <span><span class="mq-badge" style="color:#ff8a4c;background:rgba(255,138,76,.12)">COLOR</span>#FF6B35</span>
+      <span><span class="mq-badge" style="color:#ffa02b;background:rgba(255,160,43,.12)">SQL</span>SELECT * FROM orders</span>
+      <span><span class="mq-badge" style="color:#b06cff;background:rgba(176,108,255,.12)">JSON</span>{'{"retries": 3}'}</span>
+      <span><span class="mq-badge" style="color:#7c9cff;background:rgba(124,156,255,.12)">URL</span>stripe.com/docs</span>
+      <span><span class="mq-badge" style="color:#46b29d;background:rgba(70,178,157,.12)">CODE</span>docker compose up -d</span>
+      <span><span class="mq-badge" style="color:#c0426b;background:rgba(192,66,107,.12)">EMAIL</span>ana@acme.com</span>
+      <span><span class="mq-badge" style="color:#9ca0a8;background:rgba(156,160,168,.12)">PATH</span>~/dev/cleft</span>
+      <span><span class="mq-badge" style="color:#ff8a4c;background:rgba(255,138,76,.12)">COLOR</span>#FF6B35</span>
+      <span><span class="mq-badge" style="color:#ffa02b;background:rgba(255,160,43,.12)">SQL</span>SELECT * FROM orders</span>
+      <span><span class="mq-badge" style="color:#b06cff;background:rgba(176,108,255,.12)">JSON</span>{'{"retries": 3}'}</span>
+      <span><span class="mq-badge" style="color:#7c9cff;background:rgba(124,156,255,.12)">URL</span>stripe.com/docs</span>
+      <span><span class="mq-badge" style="color:#46b29d;background:rgba(70,178,157,.12)">CODE</span>docker compose up -d</span>
+      <span><span class="mq-badge" style="color:#c0426b;background:rgba(192,66,107,.12)">EMAIL</span>ana@acme.com</span>
+      <span><span class="mq-badge" style="color:#9ca0a8;background:rgba(156,160,168,.12)">PATH</span>~/dev/cleft</span>
+    </div>
+  </div>
 
   <section class="section" aria-labelledby="pain-title">
     <div class="wrap">
       <div class="section-head" data-reveal>
+        <span class="section-eyebrow">The one-slot problem</span>
         <h2 id="pain-title">You've already lost things today.</h2>
         <p>
           The system clipboard has held exactly one item since 1984. Every copy quietly destroys the
@@ -78,6 +130,7 @@ const REPO_URL = 'https://github.com/andydev404/cleft';
   <section class="section" id="features" aria-labelledby="features-title">
     <div class="wrap">
       <div class="section-head" data-reveal>
+        <span class="section-eyebrow">⌘⇧V</span>
         <h2 id="features-title">One shortcut. Your whole copy history.</h2>
         <p>
           Cleft is a floating palette, not another window to manage. It shows up over whatever
@@ -100,8 +153,8 @@ const REPO_URL = 'https://github.com/andydev404/cleft';
             each clip is detected and previewed as what it is.
           </p>
           <div class="feature-demo">
-            <span class="badge" style="color:#4f7dff;background:rgba(79,125,255,.12)">COLOR</span>
-            <span class="badge" style="color:#e0a23c;background:rgba(224,162,60,.12)">SQL</span>
+            <span class="badge" style="color:#ff8a4c;background:rgba(255,138,76,.12)">COLOR</span>
+            <span class="badge" style="color:#ffa02b;background:rgba(255,160,43,.12)">SQL</span>
             <span class="badge" style="color:#b06cff;background:rgba(176,108,255,.12)">JSON</span>
             <span class="badge" style="color:#46b29d;background:rgba(70,178,157,.12)">CODE</span>
           </div>
@@ -145,6 +198,7 @@ const REPO_URL = 'https://github.com/andydev404/cleft';
   <section class="section" id="privacy" aria-labelledby="privacy-title">
     <div class="wrap privacy">
       <div class="section-head" style="margin-bottom:0" data-reveal>
+        <span class="section-eyebrow">Privacy</span>
         <h2 id="privacy-title">A clipboard manager sees everything you copy. That's why this one tells no one.</h2>
         <p>
           Most clipboard tools ask you to trust a privacy policy. Cleft asks you to read the code —
@@ -154,7 +208,7 @@ const REPO_URL = 'https://github.com/andydev404/cleft';
       <ul class="privacy-list">
         <li data-reveal>
           <span class="privacy-check">✓</span>
-          <span><b>100% local.</b> Your history is a SQLite file in your own Library folder. Nothing is uploaded, ever.</span>
+          <span><b>100% local.</b> Your history is a SQLite file in your own app-data folder. Nothing is uploaded, ever.</span>
         </li>
         <li data-reveal>
           <span class="privacy-check">✓</span>
@@ -162,7 +216,7 @@ const REPO_URL = 'https://github.com/andydev404/cleft';
         </li>
         <li data-reveal>
           <span class="privacy-check">✓</span>
-          <span><b>No account. No sign-up.</b> Download, press <kbd>⌘</kbd><kbd>⇧</kbd><kbd>V</kbd>, done.</span>
+          <span><b>No account. No sign-up.</b> Download, press the shortcut, done.</span>
         </li>
         <li data-reveal>
           <span class="privacy-check">✓</span>
@@ -175,9 +229,9 @@ const REPO_URL = 'https://github.com/andydev404/cleft';
   <section class="cta-final">
     <div class="wrap">
       <h2 data-reveal>The next thing you copy is worth keeping.</h2>
-      <p data-reveal>Thirty seconds from download to your first rescued clip. Free, open source, and it never leaves your Mac.</p>
+      <p data-reveal>Thirty seconds from download to your first rescued clip. Free, open source, and it never leaves your computer.</p>
       <div class="hero-ctas" data-reveal>
-        <a class="btn btn-primary" href={DOWNLOAD_URL} rel="noopener">Download Cleft for macOS</a>
+        <a class="btn btn-primary" href={DOWNLOAD_URL} rel="noopener">Download Cleft free</a>
         <a class="btn btn-ghost" href={REPO_URL} rel="noopener">Star on GitHub</a>
       </div>
     </div>
@@ -202,29 +256,117 @@ const REPO_URL = 'https://github.com/andydev404/cleft';
   if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     gsap.registerPlugin(ScrollTrigger);
 
-    gsap.from('[data-hero]', {
-      opacity: 0,
-      y: 22,
-      duration: 0.7,
-      stagger: 0.09,
-      ease: 'power2.out',
+    // Scroll progress hairline in the ember gradient.
+    gsap.to('.scroll-progress', {
+      scaleX: 1,
+      ease: 'none',
+      scrollTrigger: { start: 0, end: 'max', scrub: 0.3 },
     });
 
-    for (const el of document.querySelectorAll('[data-reveal]')) {
+    // Hero entrance: copy staggers in, the demo rises from depth.
+    gsap.from('[data-hero]', {
+      opacity: 0,
+      y: 26,
+      duration: 0.8,
+      stagger: 0.09,
+      ease: 'power3.out',
+    });
+
+    // The zoom: the demo starts tilted back in 3D and flattens/scales up
+    // as it scrolls through the viewport, Linear-style. Scrubbed, not
+    // pinned, so it stays smooth on mobile. (Outer wrapper handles the
+    // entrance opacity; this owns rotateX/scale so they never fight.)
+    gsap.fromTo(
+      '.demo-zoom',
+      { rotateX: 14, scale: 0.9, transformOrigin: '50% 0%' },
+      {
+        rotateX: 0,
+        scale: 1.04,
+        ease: 'none',
+        scrollTrigger: { trigger: '.demo-stage', start: 'top 85%', end: 'top 12%', scrub: 0.8 },
+      }
+    );
+
+    // Hero copy drifts up and dims as the demo takes the stage.
+    gsap.to('.hero-inner', {
+      yPercent: -10,
+      opacity: 0.3,
+      ease: 'none',
+      scrollTrigger: { trigger: '.demo-stage', start: 'top 70%', end: 'top 15%', scrub: true },
+    });
+
+    // Floating clip fragments: slow parallax at three different speeds.
+    gsap.utils.toArray<HTMLElement>('.float-chip').forEach((chip, i) => {
+      gsap.to(chip, {
+        yPercent: -(26 + i * 16),
+        ease: 'none',
+        scrollTrigger: { trigger: '.demo-stage', start: 'top bottom', end: 'bottom top', scrub: 0.6 },
+      });
+    });
+
+    // Section headings sharpen out of a blur; cards rise with a stagger.
+    for (const el of document.querySelectorAll('.section-head[data-reveal]')) {
       gsap.fromTo(
         el,
+        { opacity: 0, y: 30, filter: 'blur(8px)' },
+        {
+          opacity: 1,
+          y: 0,
+          filter: 'blur(0px)',
+          duration: 0.8,
+          ease: 'power2.out',
+          scrollTrigger: { trigger: el, start: 'top 85%', once: true },
+        }
+      );
+    }
+
+    for (const grid of document.querySelectorAll('.pain-grid, .feature-grid, .privacy-list')) {
+      const items = grid.querySelectorAll('[data-reveal]');
+      gsap.fromTo(
+        items,
         { opacity: 0, y: 26 },
         {
           opacity: 1,
           y: 0,
-          duration: 0.65,
+          duration: 0.6,
+          stagger: 0.08,
           ease: 'power2.out',
-          scrollTrigger: { trigger: el, start: 'top 86%', once: true },
+          scrollTrigger: { trigger: grid, start: 'top 84%', once: true },
         }
       );
     }
+
+    // Final CTA scales in with its glow.
+    for (const el of document.querySelectorAll('.cta-final [data-reveal]')) {
+      gsap.fromTo(
+        el,
+        { opacity: 0, y: 22, scale: 0.96 },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.7,
+          stagger: 0.08,
+          ease: 'power2.out',
+          scrollTrigger: { trigger: '.cta-final', start: 'top 78%', once: true },
+        }
+      );
+    }
+
+    // Layout settles after the React island and fonts land.
+    window.addEventListener('load', () => ScrollTrigger.refresh());
   } else {
     for (const el of document.querySelectorAll<HTMLElement>('[data-reveal]')) el.style.opacity = '1';
+  }
+
+  // Cursor spotlight on feature cards (pointer devices only; CSS gates the
+  // visual behind hover support).
+  for (const card of document.querySelectorAll<HTMLElement>('.feature')) {
+    card.addEventListener('pointermove', (e) => {
+      const r = card.getBoundingClientRect();
+      card.style.setProperty('--mx', `${e.clientX - r.left}px`);
+      card.style.setProperty('--my', `${e.clientY - r.top}px`);
+    });
   }
 </script>
 
@@ -267,15 +409,19 @@ const REPO_URL = 'https://github.com/andydev404/cleft';
 
   .pd-slot-note {
     flex-shrink: 0;
-    color: var(--amber);
+    color: var(--sun);
   }
 
   .pd-window {
+    position: relative;
     border: 1px solid var(--line-2);
     border-radius: 18px;
-    background: color-mix(in srgb, var(--panel) 88%, transparent);
+    background: rgba(16, 17, 20, 0.82);
     backdrop-filter: blur(10px);
-    box-shadow: 0 28px 70px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    box-shadow:
+      0 32px 80px rgba(0, 0, 0, 0.55),
+      0 0 60px rgba(255, 107, 53, 0.07),
+      inset 0 1px 0 rgba(255, 255, 255, 0.07);
     overflow: hidden;
   }
 
@@ -322,8 +468,8 @@ const REPO_URL = 'https://github.com/andydev404/cleft';
   }
 
   .pd-row:first-child {
-    background: rgba(79, 125, 255, 0.1);
-    box-shadow: inset 0 0 0 1px rgba(79, 125, 255, 0.25);
+    background: rgba(255, 107, 53, 0.09);
+    box-shadow: inset 0 0 0 1px rgba(255, 107, 53, 0.28);
   }
 
   .pd-icon {

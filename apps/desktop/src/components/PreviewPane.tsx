@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ClipMetaRow } from "@/components/ClipMetaRow";
 import { ClipPreview } from "@/components/ClipPreview";
 import { appIcon } from "@/lib/appIcon";
+import { modKey } from "@/lib/platform";
 import type { ClipMetadata } from "@/types";
 
 interface PreviewPaneProps {
@@ -36,7 +37,7 @@ export function PreviewPane({ selected, content, onToggleFavorite, onDelete, onC
         </div>
         <button
           onClick={onToggleFavorite}
-          title="Pin (⌘D)"
+          title={`Pin (${modKey}D)`}
           className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-[8px] border text-[14px] transition-colors"
           style={{
             borderColor: "var(--border-2)",

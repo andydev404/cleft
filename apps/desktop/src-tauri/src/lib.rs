@@ -25,7 +25,16 @@ use palette::{show_palette, toggle_palette, PALETTE_WINDOW};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let shortcut = Shortcut::new(Some(Modifiers::SUPER | Modifiers::SHIFT), Code::KeyV);
+    // Cmd+Shift+V on macOS; Ctrl+Shift+V elsewhere. Windows 10+ already
+    // owns Win+Shift+V-adjacent territory with its native Win+V clipboard
+    // history — binding our own shortcut to the Windows/Super key isn't
+    // the convention there the way Cmd is on macOS, so Ctrl is used
+    // instead (matches other third-party Windows clipboard managers).
+    #[cfg(target_os = "macos")]
+    let shortcut_modifiers = Modifiers::SUPER | Modifiers::SHIFT;
+    #[cfg(not(target_os = "macos"))]
+    let shortcut_modifiers = Modifiers::CONTROL | Modifiers::SHIFT;
+    let shortcut = Shortcut::new(Some(shortcut_modifiers), Code::KeyV);
 
     tauri::Builder::default()
         .plugin(tauri_plugin_clipboard_manager::init())
@@ -85,7 +94,7 @@ pub fn run() {
             app.manage(DbState(Mutex::new(conn)));
             clipboard::start_monitor(app.handle().clone());
 
-            // Native vibrancy instead of CSS backdrop-filter — WebKit
+            // Native vibrancy instead of CSS backdrop-filter — WebKit/WebView2
             // resampling behind a transparent window every frame caused
             // visible compositing glitches even at idle.
             #[cfg(target_os = "macos")]
@@ -97,6 +106,17 @@ pub fn run() {
                     Some(16.0),
                 )
                 .expect("failed to apply macOS vibrancy");
+            }
+
+            // Acrylic is the broadly-compatible choice (Windows 10 1809+);
+            // Mica would need a Windows-11-only code path. Not `.expect()`-ed
+            // like the macOS call above — this hasn't been verified against
+            // a real Windows build in this environment (no Windows machine
+            // available), so a failure here degrades to the plain
+            // transparent window rather than taking the app down with it.
+            #[cfg(target_os = "windows")]
+            if let Some(window) = app.get_webview_window(PALETTE_WINDOW) {
+                let _ = window_vibrancy::apply_acrylic(&window, Some((252, 252, 254, 180)));
             }
 
             app.global_shortcut().register(shortcut)?;

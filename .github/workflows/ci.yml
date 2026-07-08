@@ -15,7 +15,7 @@ jobs:
       - run: bun run build
         working-directory: apps/desktop
 
-  desktop-rust:
+  desktop-rust-macos:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,6 +29,22 @@ jobs:
         working-directory: apps/desktop/src-tauri
       - run: cargo clippy --all-targets -- -D warnings
         working-directory: apps/desktop/src-tauri
+      - run: cargo test
+        working-directory: apps/desktop/src-tauri
+
+  # The real verification for everything in frontmost_app.rs, ax.rs,
+  # keychain.rs, pasteboard.rs's Windows branches — none of it can be
+  # compiled (only guessed at) on a macOS dev machine, since the SQLCipher
+  # vendored-OpenSSL build needs a real Windows toolchain (Perl + NASM,
+  # which the windows-latest runner image provides out of the box).
+  desktop-rust-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop/src-tauri
       - run: cargo test
         working-directory: apps/desktop/src-tauri
 
