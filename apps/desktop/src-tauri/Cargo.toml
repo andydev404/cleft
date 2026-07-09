@@ -12,6 +12,11 @@ edition = "2021"
 name = "cleft_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
+[features]
+# Required by tauri-nspanel (its legacy objc macros emit `cfg(feature =
+# "cargo-clippy")`, which trips the unexpected_cfgs lint otherwise).
+cargo-clippy = []
+
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 
@@ -50,6 +55,11 @@ objc2-foundation = { version = "0.3", default-features = false, features = [
 security-framework = "3"
 core-foundation = "0.10"
 window-vibrancy = "0.5"
+# Swizzles the palette NSWindow into a non-activating NSPanel — the only
+# way a Tauri window can appear (and take keyboard input) over another
+# app's fullscreen Space, same approach Raycast-class apps use. Pinned to
+# a rev of the v2 branch (no crates.io release for Tauri v2 yet).
+tauri-nspanel = { git = "https://github.com/ahkohd/tauri-nspanel", rev = "18ffb9a201fbf6fedfaa382fd4b92315ea30ab1a" }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 window-vibrancy = "0.5"

@@ -35,7 +35,7 @@ pub fn run() {
     let shortcut_modifiers = Modifiers::CONTROL | Modifiers::ALT;
     let shortcut = Shortcut::new(Some(shortcut_modifiers), Code::KeyV);
 
-    tauri::Builder::default()
+    let builder = tauri::Builder::default()
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_process::init())
@@ -52,7 +52,13 @@ pub fn run() {
                     }
                 })
                 .build(),
-        )
+        );
+
+    // NSPanel support (see palette.rs for why the palette must be a panel).
+    #[cfg(target_os = "macos")]
+    let builder = builder.plugin(tauri_nspanel::init());
+
+    builder
         .invoke_handler(tauri::generate_handler![
             commands::get_history,
             commands::search_clips,
@@ -97,30 +103,19 @@ pub fn run() {
             // resampling behind a transparent window every frame caused
             // visible compositing glitches even at idle.
             #[cfg(target_os = "macos")]
-            if let Some(window) = app.get_webview_window(PALETTE_WINDOW) {
-                window_vibrancy::apply_vibrancy(
-                    &window,
-                    window_vibrancy::NSVisualEffectMaterial::Popover,
-                    None,
-                    Some(16.0),
-                )
-                .expect("failed to apply macOS vibrancy");
-
-                // show() reveals a window on the Space it was created on —
-                // not the active one. Without these flags, pressing the
-                // shortcut while another app (or Space, or a fullscreen
-                // window) is focused opens the palette invisibly back on
-                // the desktop. CanJoinAllSpaces makes it follow the user;
-                // FullScreenAuxiliary lets it float over fullscreen apps —
-                // the same behavior Spotlight and Raycast use.
-                use objc2_app_kit::{NSWindow, NSWindowCollectionBehavior};
-                let ns_window = window.ns_window()? as *mut NSWindow;
-                unsafe {
-                    (*ns_window).setCollectionBehavior(
-                        NSWindowCollectionBehavior::CanJoinAllSpaces
-                            | NSWindowCollectionBehavior::FullScreenAuxiliary,
-                    );
+            {
+                if let Some(window) = app.get_webview_window(PALETTE_WINDOW) {
+                    window_vibrancy::apply_vibrancy(
+                        &window,
+                        window_vibrancy::NSVisualEffectMaterial::Popover,
+                        None,
+                        Some(16.0),
+                    )
+                    .expect("failed to apply macOS vibrancy");
                 }
+                // After vibrancy: swizzle the window into a non-activating
+                // NSPanel so it can appear over fullscreen Spaces.
+                palette::init_panel(app.handle());
             }
 
             // Acrylic is the broadly-compatible choice (Windows 10 1809+);
