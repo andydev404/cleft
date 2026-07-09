@@ -80,8 +80,13 @@
     --card-foreground: #15151c;
     --popover: rgba(252, 252, 254, 0.94);
     --popover-foreground: #15151c;
-    --primary: #2563eb;
-    --primary-foreground: #ffffff;
+    /* Matches the landing page/app-icon brand color (apps/web's --ember,
+       #ff6b35) instead of the design import's default blue — and
+       primary-foreground follows the landing page's own button treatment
+       (dark text, not white: white-on-ember only hits 2.84:1 contrast,
+       dark #1a0d06 hits 6.71:1). */
+    --primary: #ff6b35;
+    --primary-foreground: #1a0d06;
     /* Light-mode full pass, all measured against a white-ish backdrop
        (this app's actual background is a translucent vibrancy surface,
        which is close to white in light mode — WCAG contrast ratios below
@@ -119,7 +124,7 @@
     --border-2: rgba(12, 16, 42, 0.28);
     --shadow: 0 40px 100px -26px rgba(28, 38, 78, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 0 0 1px rgba(12, 16, 42, 0.05);
     --input: rgba(12, 16, 42, 0.16);
-    --ring: #2563eb;
+    --ring: #ff6b35;
     --chart-1: oklch(0.87 0 0);
     --chart-2: oklch(0.556 0 0);
     --chart-3: oklch(0.439 0 0);
@@ -128,12 +133,12 @@
     --radius: 0.75rem;
     --sidebar: rgba(0, 0, 0, 0.01);
     --sidebar-foreground: #15151c;
-    --sidebar-primary: #2563eb;
-    --sidebar-primary-foreground: #ffffff;
+    --sidebar-primary: #ff6b35;
+    --sidebar-primary-foreground: #1a0d06;
     --sidebar-accent: rgba(12, 16, 42, 0.08);
     --sidebar-accent-foreground: #15151c;
     --sidebar-border: rgba(12, 16, 42, 0.16);
-    --sidebar-ring: #2563eb;
+    --sidebar-ring: #ff6b35;
 }
 
 .dark {
@@ -145,8 +150,13 @@
     --card-foreground: #ededf0;
     --popover: rgba(23, 23, 27, 0.45);
     --popover-foreground: #ededf0;
-    --primary: #2563eb;
-    --primary-foreground: #ffffff;
+    /* Matches the landing page/app-icon brand color (apps/web's --ember,
+       #ff6b35) instead of the design import's default blue — and
+       primary-foreground follows the landing page's own button treatment
+       (dark text, not white: white-on-ember only hits 2.84:1 contrast,
+       dark #1a0d06 hits 6.71:1). */
+    --primary: #ff6b35;
+    --primary-foreground: #1a0d06;
     --secondary: rgba(255, 255, 255, 0.055);
     --secondary-foreground: #ededf0;
     --muted: rgba(255, 255, 255, 0.055);
@@ -163,7 +173,7 @@
     --border-2: rgba(255, 255, 255, 0.12);
     --shadow: 0 40px 100px -24px rgba(0, 0, 0, 0.74), inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.04);
     --input: rgba(255, 255, 255, 0.07);
-    --ring: #2563eb;
+    --ring: #ff6b35;
     --chart-1: oklch(0.87 0 0);
     --chart-2: oklch(0.556 0 0);
     --chart-3: oklch(0.439 0 0);
@@ -171,12 +181,12 @@
     --chart-5: oklch(0.269 0 0);
     --sidebar: rgba(255, 255, 255, 0.012);
     --sidebar-foreground: #ededf0;
-    --sidebar-primary: #2563eb;
-    --sidebar-primary-foreground: #ffffff;
+    --sidebar-primary: #ff6b35;
+    --sidebar-primary-foreground: #1a0d06;
     --sidebar-accent: rgba(255, 255, 255, 0.055);
     --sidebar-accent-foreground: #ededf0;
     --sidebar-border: rgba(255, 255, 255, 0.07);
-    --sidebar-ring: #2563eb;
+    --sidebar-ring: #ff6b35;
 }
 
 @layer base {

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { PanelLeft, Search, X } from "lucide-react";
 import { BulkActionsBar } from "@/components/BulkActionsBar";
 import { ClipRow } from "@/components/ClipRow";
@@ -42,6 +43,20 @@ export function ClipboardView() {
 
   useEffect(() => {
     searchInputRef.current?.focus();
+    // The palette window is pre-rendered and just shown/hidden after the
+    // first launch, not remounted — so this effect's initial run only
+    // covers that very first appearance. Without also refocusing on every
+    // subsequent "palette-shown" (fired by the global shortcut toggling
+    // visibility), the webview falls back to whatever was focused before
+    // hiding, or the first focusable element in the header (the sidebar
+    // collapse button) if nothing was — landing focus somewhere that was
+    // never intended to hold it.
+    const unlisten = listen("palette-shown", () => {
+      searchInputRef.current?.focus();
+    });
+    return () => {
+      unlisten.then((f) => f());
+    };
   }, []);
 
   useEffect(() => {
