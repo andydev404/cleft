@@ -4,7 +4,6 @@ import { invoke } from "@tauri-apps/api/core";
 import { useAutomationStore } from "@/store/automationStore";
 import { useClipboardStore } from "@/store/clipboardStore";
 import { useToastStore } from "@/store/toastStore";
-import { useRunwayStore } from "@/store/runwayStore";
 import { useUpdateStore } from "@/store/updateStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import { playCaptureSound } from "@/lib/captureSound";
@@ -48,11 +47,6 @@ export function useAppEvents(onPaletteShown: () => void) {
       useClipboardStore.getState().clearSelection();
       onPaletteShown();
     });
-    // Fired by the tray icon's "Permissions…" item — re-triggers the native
-    // macOS Accessibility dialog directly, no custom screen in between.
-    const unlistenReplayRunway = listen("replay-runway", () => {
-      useRunwayStore.getState().requestPermission();
-    });
     // Fired by the tray icon's "Check for Updates…" item — unlike the
     // silent startup check, this one always reports back (e.g. "You're up
     // to date") since the user asked directly.
@@ -79,7 +73,6 @@ export function useAppEvents(onPaletteShown: () => void) {
       unlistenContext.then((f) => f());
       unlistenEvicted.then((f) => f());
       unlistenShown.then((f) => f());
-      unlistenReplayRunway.then((f) => f());
       unlistenCheckUpdates.then((f) => f());
       window.removeEventListener("keydown", onKeyDown);
     };

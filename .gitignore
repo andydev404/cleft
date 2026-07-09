@@ -23,6 +23,12 @@ dist-ssr
 *.sln
 *.sw?
 
+# Signing material — never belongs in the repo, even briefly
+*.p12
+*.pfx
+*.pem
+*.mobileprovision
+
 # Claude Code local state
 .claude/scheduled_tasks.lock
 

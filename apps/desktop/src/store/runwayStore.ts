@@ -12,9 +12,10 @@ interface RunwayState {
 let pollHandle: ReturnType<typeof setInterval> | null = null;
 
 // No custom pre-explanation screen — macOS's own Accessibility dialog is
-// the explanation. We only need to: check status, ask once automatically
-// on first launch, and let the user re-ask anytime after (see the
-// trusted===false banner in RootLayout and the tray's "Permissions…" item).
+// the explanation. Just checks status once and asks automatically on first
+// launch; there's no manual re-ask UI anymore (the banner/tray item for it
+// were removed as dead weight — Settings still shows the real, accurate
+// permission-independent info).
 export const useRunwayStore = create<RunwayState>((set, get) => ({
   trusted: null,
 

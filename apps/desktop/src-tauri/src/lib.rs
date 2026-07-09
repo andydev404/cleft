@@ -105,6 +105,22 @@ pub fn run() {
                     Some(16.0),
                 )
                 .expect("failed to apply macOS vibrancy");
+
+                // show() reveals a window on the Space it was created on —
+                // not the active one. Without these flags, pressing the
+                // shortcut while another app (or Space, or a fullscreen
+                // window) is focused opens the palette invisibly back on
+                // the desktop. CanJoinAllSpaces makes it follow the user;
+                // FullScreenAuxiliary lets it float over fullscreen apps —
+                // the same behavior Spotlight and Raycast use.
+                use objc2_app_kit::{NSWindow, NSWindowCollectionBehavior};
+                let ns_window = window.ns_window()? as *mut NSWindow;
+                unsafe {
+                    (*ns_window).setCollectionBehavior(
+                        NSWindowCollectionBehavior::CanJoinAllSpaces
+                            | NSWindowCollectionBehavior::FullScreenAuxiliary,
+                    );
+                }
             }
 
             // Acrylic is the broadly-compatible choice (Windows 10 1809+);

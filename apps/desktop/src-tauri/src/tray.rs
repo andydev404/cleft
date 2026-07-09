@@ -10,11 +10,6 @@ pub fn init(app: &App) -> tauri::Result<()> {
     #[cfg(not(target_os = "macos"))]
     let accelerator = "Ctrl+Alt+V";
     let open_item = MenuItem::with_id(app, "open", "Open Cleft", true, Some(accelerator))?;
-    // The Accessibility permission only exists on macOS — no dead
-    // "Permissions…" entry on other platforms.
-    #[cfg(target_os = "macos")]
-    let permissions_item =
-        MenuItem::with_id(app, "permissions", "Permissions…", true, None::<&str>)?;
     let update_item = MenuItem::with_id(
         app,
         "check_updates",
@@ -27,8 +22,6 @@ pub fn init(app: &App) -> tauri::Result<()> {
     let separator_bottom = PredefinedMenuItem::separator(app)?;
 
     let mut items: Vec<&dyn tauri::menu::IsMenuItem<tauri::Wry>> = vec![&open_item, &separator_top];
-    #[cfg(target_os = "macos")]
-    items.push(&permissions_item);
     items.extend([
         &update_item as &dyn tauri::menu::IsMenuItem<tauri::Wry>,
         &separator_bottom,
@@ -44,12 +37,6 @@ pub fn init(app: &App) -> tauri::Result<()> {
         .menu(&menu)
         .on_menu_event(|app, event| match event.id().as_ref() {
             "open" => toggle_palette(app),
-            // Re-triggers the native Accessibility dialog via the
-            // frontend (runwayStore.requestPermission).
-            "permissions" => {
-                show_palette(app);
-                app.emit("replay-runway", ()).ok();
-            }
             // Handled on the frontend (updateStore) so manual checks
             // share the same dialog/toast UX as the startup check.
             "check_updates" => {
