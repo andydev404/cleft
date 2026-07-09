@@ -25,15 +25,14 @@ use palette::{show_palette, toggle_palette, PALETTE_WINDOW};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    // Cmd+Shift+V on macOS; Ctrl+Shift+V elsewhere. Windows 10+ already
-    // owns Win+Shift+V-adjacent territory with its native Win+V clipboard
-    // history — binding our own shortcut to the Windows/Super key isn't
-    // the convention there the way Cmd is on macOS, so Ctrl is used
-    // instead (matches other third-party Windows clipboard managers).
+    // Cmd+Shift+V on macOS; Ctrl+Alt+V elsewhere. Not Ctrl+Shift+V — a
+    // global hotkey would steal "paste as plain text" from Chrome, Word,
+    // and Slack system-wide. Not Win+V-adjacent either: Windows reserves
+    // that space for its native clipboard history.
     #[cfg(target_os = "macos")]
     let shortcut_modifiers = Modifiers::SUPER | Modifiers::SHIFT;
     #[cfg(not(target_os = "macos"))]
-    let shortcut_modifiers = Modifiers::CONTROL | Modifiers::SHIFT;
+    let shortcut_modifiers = Modifiers::CONTROL | Modifiers::ALT;
     let shortcut = Shortcut::new(Some(shortcut_modifiers), Code::KeyV);
 
     tauri::Builder::default()

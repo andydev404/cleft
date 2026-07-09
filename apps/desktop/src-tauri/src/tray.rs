@@ -8,7 +8,7 @@ pub fn init(app: &App) -> tauri::Result<()> {
     #[cfg(target_os = "macos")]
     let accelerator = "Cmd+Shift+V";
     #[cfg(not(target_os = "macos"))]
-    let accelerator = "Ctrl+Shift+V";
+    let accelerator = "Ctrl+Alt+V";
     let open_item = MenuItem::with_id(app, "open", "Open Cleft", true, Some(accelerator))?;
     // The Accessibility permission only exists on macOS — no dead
     // "Permissions…" entry on other platforms.

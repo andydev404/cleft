@@ -1,6 +1,6 @@
 # Cleft
 
-A fast, privacy-first clipboard manager for macOS and Windows. Press <kbd>⌘⇧V</kbd> (<kbd>Ctrl⇧V</kbd> on Windows) anywhere to open a Spotlight-style palette with everything you've copied — searchable, organized, and stored entirely on your machine.
+A fast, privacy-first clipboard manager for macOS and Windows. Press <kbd>⌘⇧V</kbd> (<kbd>Ctrl+Alt+V</kbd> on Windows) anywhere to open a Spotlight-style palette with everything you've copied — searchable, organized, and stored entirely on your machine.
 
 ## Features
 
