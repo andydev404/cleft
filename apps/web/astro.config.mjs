@@ -7,9 +7,11 @@ import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
-  // Update when the production domain is finalized — sitemap + canonical
-  // URLs derive from it.
-  site: 'https://cleft.app',
+  // GitHub Pages for the andydev404/cleft repo. When a custom domain
+  // lands, set `site` to it and drop `base` — canonical URLs, the sitemap,
+  // and robots.txt (public/robots.txt) all derive from these.
+  site: 'https://andydev404.github.io',
+  base: '/cleft',
   integrations: [
     react(),
     // Partytown runs third-party scripts (analytics, etc.) off the main

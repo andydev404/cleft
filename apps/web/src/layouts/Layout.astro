@@ -8,6 +8,8 @@ interface Props {
 
 const { title, description } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
+// BASE_URL has no trailing slash (e.g. "/cleft") — normalize for joining.
+const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -19,7 +21,7 @@ const jsonLd = {
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
   license: 'https://opensource.org/licenses/MIT',
   downloadUrl: 'https://github.com/andydev404/cleft/releases/latest',
-  url: Astro.site?.toString(),
+  url: canonical.toString(),
 };
 ---
 
@@ -31,8 +33,8 @@ const jsonLd = {
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <link rel="sitemap" href={`${base}sitemap-index.xml`} />
     <meta name="theme-color" content="#08090c" />
     <meta name="generator" content={Astro.generator} />
 
