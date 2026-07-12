@@ -579,7 +579,7 @@ dependencies = [
 
 [[package]]
 name = "cleft"
-version = "0.1.3"
+version = "0.2.0"
 dependencies = [
  "ammonia",
  "bip39",
