@@ -205,7 +205,8 @@ mod tests {
                 source_app TEXT NOT NULL DEFAULT '', window_title TEXT, url TEXT,
                 timestamp INTEGER NOT NULL, is_favorite INTEGER NOT NULL DEFAULT 0,
                 workspace TEXT NOT NULL DEFAULT 'Personal', collection TEXT,
-                tags TEXT NOT NULL DEFAULT ''
+                tags TEXT NOT NULL DEFAULT '',
+                copy_count INTEGER NOT NULL DEFAULT 0, expires_at INTEGER
             )",
             (),
         )

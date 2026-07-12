@@ -66,6 +66,8 @@ pub fn run() {
             commands::render_markdown,
             commands::delete_clips,
             commands::set_favorite,
+            commands::copy_clip,
+            commands::set_expiry,
             commands::list_workspaces,
             commands::create_workspace,
             commands::switch_workspace,

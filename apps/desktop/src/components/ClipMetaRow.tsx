@@ -1,18 +1,29 @@
 import { useState } from "react";
-import { X } from "lucide-react";
+import { Timer, X } from "lucide-react";
+import { timeLeft } from "@/lib/age";
 import { useClipboardStore } from "@/store/clipboardStore";
 import type { ClipMetadata } from "@/types";
+
+const EXPIRY_CHOICES: { label: string; seconds: number | null }[] = [
+  { label: "Never", seconds: null },
+  { label: "1 hour", seconds: 3600 },
+  { label: "24 hours", seconds: 24 * 3600 },
+  { label: "7 days", seconds: 7 * 24 * 3600 },
+];
 
 // Manual collection/tag assignment; automation rules (clipboard.rs) are
 // the other path that writes the same fields.
 export function ClipMetaRow({ clip }: { clip: ClipMetadata }) {
-  const { assignCollection, addTag, removeTag } = useClipboardStore();
+  const { assignCollection, addTag, removeTag, setExpiry } = useClipboardStore();
   const [editingCollection, setEditingCollection] = useState(false);
   const [collectionDraft, setCollectionDraft] = useState(clip.collection ?? "");
   const [tagDraft, setTagDraft] = useState("");
 
   return (
-    <div className="flex shrink-0 flex-wrap items-center gap-1.5 border-b px-[18px] py-2 text-[11.5px]">
+    // Outer row never wraps — the expiry control stays pinned to the right
+    // on the same line; only the collection/tags cluster wraps internally.
+    <div className="flex shrink-0 items-start justify-between gap-3 border-b px-[18px] py-2 text-[11.5px]">
+      <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
       <span className="font-semibold text-text-tertiary">Collection:</span>
       {editingCollection ? (
         <input
@@ -67,6 +78,33 @@ export function ClipMetaRow({ clip }: { clip: ClipMetadata }) {
         placeholder="+ add tag"
         className="w-[80px] rounded-[6px] bg-transparent px-1 py-[3px] text-text-tertiary outline-none placeholder:text-text-tertiary"
       />
+      </div>
+
+      {/* Self-destruct timer for temporary clips (one-time credentials,
+          tokens) — swept by the Rust monitor once it passes. */}
+      <span className="flex shrink-0 items-center gap-1 pt-[3px]">
+        <Timer
+          className="h-3 w-3"
+          style={{ color: clip.expires_at ? "var(--primary)" : "var(--text-tertiary)" }}
+        />
+        {clip.expires_at && <span style={{ color: "var(--primary)" }}>{timeLeft(clip.expires_at)}</span>}
+        <select
+          value=""
+          onChange={(e) => {
+            const choice = EXPIRY_CHOICES[Number(e.currentTarget.value)];
+            setExpiry(clip.id, choice.seconds === null ? null : Math.floor(Date.now() / 1000) + choice.seconds);
+          }}
+          title="Auto-delete this clip after…"
+          className="w-[18px] cursor-pointer bg-transparent text-text-tertiary outline-none"
+        >
+          <option value="" disabled hidden />
+          {EXPIRY_CHOICES.map((choice, i) => (
+            <option key={choice.label} value={i}>
+              {choice.label}
+            </option>
+          ))}
+        </select>
+      </span>
     </div>
   );
 }

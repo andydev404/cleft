@@ -1,5 +1,6 @@
-import { Check, Star, Tag, Trash2 } from "lucide-react";
+import { Check, Pencil, Star, Tag, Trash2 } from "lucide-react";
 import { TypeBadge } from "@/components/TypeBadge";
+import { clipAge } from "@/lib/age";
 import { appIcon } from "@/lib/appIcon";
 import type { ClipMetadata } from "@/types";
 
@@ -14,6 +15,7 @@ interface ClipRowProps {
   onSelect: () => void;
   onCopy: () => void;
   onDelete: () => void;
+  onEdit: () => void;
   onMove: (delta: number) => void;
 }
 
@@ -28,9 +30,11 @@ export function ClipRow({
   onSelect,
   onCopy,
   onDelete,
+  onEdit,
   onMove,
 }: ClipRowProps) {
   const icon = appIcon(clip.source_app);
+  const age = clipAge(clip.timestamp);
 
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === "Delete" || e.key === "Backspace") {
@@ -42,6 +46,9 @@ export function ClipRow({
     } else if (e.key === " ") {
       e.preventDefault();
       onSelect();
+    } else if (e.key === "e" || e.key === "E") {
+      e.preventDefault();
+      onEdit();
     } else if (e.key === "ArrowDown") {
       e.preventDefault();
       onMove(1);
@@ -58,9 +65,16 @@ export function ClipRow({
       tabIndex={0}
       onClick={onClick}
       onKeyDown={handleKeyDown}
-      className="group relative mb-0.5 flex w-full cursor-default items-start gap-2.5 rounded-[9px] p-2 text-left outline-none transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/50"
-      style={{ background: isSelected ? "var(--row-sel)" : "transparent", boxShadow: isSelected ? "inset 0 0 0 1px var(--border)" : "none" }}
+      className="group relative mb-0.5 flex w-full cursor-default items-start gap-2.5 rounded-[9px] p-2 pl-[11px] text-left outline-none transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/50"
+      style={{
+        background: isSelected ? "var(--row-sel)" : "transparent",
+        boxShadow: isSelected ? "inset 0 0 0 1px var(--border)" : "none",
+        opacity: age.opacity,
+      }}
     >
+      {/* Age bar: fresh clips carry a vivid edge, old ones fade — scannable
+          without reading timestamps. */}
+      <span aria-hidden="true" className="absolute bottom-2.5 left-[3px] top-2.5 w-[2.5px] rounded-full" style={{ background: age.bar }} />
       <button
         onClick={(e) => {
           e.stopPropagation();
@@ -101,6 +115,16 @@ export function ClipRow({
         <button
           onClick={(e) => {
             e.stopPropagation();
+            onEdit();
+          }}
+          title="Edit before paste (E)"
+          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] text-text-tertiary opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover:opacity-100"
+        >
+          <Pencil className="h-3.5 w-3.5" />
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
             onDelete();
           }}
           title="Delete"
@@ -111,6 +135,14 @@ export function ClipRow({
         <div className="flex flex-col items-end gap-[5px]">
           <div className="flex items-center gap-[5px]">
             {clip.is_favorite && <Star className="h-[9px] w-[9px] fill-primary text-primary" />}
+            {clip.copy_count > 0 && (
+              <span
+                title={`Copied ${clip.copy_count} time${clip.copy_count === 1 ? "" : "s"} from Cleft`}
+                className="rounded-[5px] bg-muted px-1.5 py-0.5 text-[9.5px] font-semibold tabular-nums text-text-tertiary"
+              >
+                ×{clip.copy_count}
+              </span>
+            )}
             {clip.tags.length > 0 && (
               <span
                 className="flex items-center gap-[3px] rounded-[5px] bg-muted px-1.5 py-0.5 text-[9.5px] font-medium text-text-tertiary"

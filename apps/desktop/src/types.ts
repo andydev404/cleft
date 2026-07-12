@@ -22,6 +22,8 @@ export interface ClipMetadata {
   workspace: string;
   collection: string | null;
   tags: string[];
+  copy_count: number;
+  expires_at: number | null;
 }
 
 export interface Workspace {

@@ -59,7 +59,12 @@ export function useAppEvents(onPaletteShown: () => void) {
       // Escape backs out of bulk-select mode first, then closes the
       // palette on a second press — matches how Esc behaves in most list
       // UIs with a selection mode (e.g. Mail, Photos).
-      const { bulkSelected, clearBulkSelection } = useClipboardStore.getState();
+      const { bulkSelected, clearBulkSelection, editing, cancelEdit } = useClipboardStore.getState();
+      // Esc backs out one layer at a time: edit mode → bulk-select → palette.
+      if (editing) {
+        cancelEdit();
+        return;
+      }
       if (bulkSelected.size > 0) {
         clearBulkSelection();
         return;

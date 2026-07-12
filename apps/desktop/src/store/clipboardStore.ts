@@ -28,7 +28,13 @@ interface ClipboardState {
   copyClip: (clip: ClipMetadata) => Promise<void>;
   clearSelection: () => void;
   toggleFavorite: (id: string) => void;
+  setExpiry: (id: string, expiresAt: number | null) => void;
   removeEvicted: (ids: string[]) => void;
+
+  editing: boolean;
+  startEdit: () => void;
+  cancelEdit: () => void;
+  pasteEdited: (text: string) => void;
 
   bulkSelected: Set<string>;
   lastClickedId: string | null;
@@ -109,23 +115,34 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
     set({ history });
   },
 
-  addClip: (clip) => set((s) => ({ history: [clip, ...s.history] })),
+  // A re-copy of existing content arrives as the *same* clip id with a
+  // fresh timestamp (duplicate detection, db.rs) — move it to the top
+  // instead of letting a twin row appear.
+  addClip: (clip) =>
+    set((s) => ({
+      history: [clip, ...s.history.filter((c) => c.id !== clip.id)],
+      searchResults: s.searchResults.map((c) => (c.id === clip.id ? clip : c)),
+      selected: s.selected?.id === clip.id ? clip : s.selected,
+    })),
 
   updateContext: (id, window_title, url) => set((s) => patchClip(s, id, (c) => ({ ...c, window_title, url }))),
 
   selectClip: (clip) => {
-    set({ selected: clip, selectedContent: null, lastClickedId: clip.id });
+    // Moving to another clip always leaves edit mode — the editor is tied
+    // to the clip it was opened on.
+    set({ selected: clip, selectedContent: null, lastClickedId: clip.id, editing: false });
     invoke<string | null>("get_clip_content", { id: clip.id }).then((content) => {
       if (get().selected?.id === clip.id) set({ selectedContent: content });
     });
   },
 
-  // Fetches fresh rather than trusting selectedContent — this is also
-  // called for clips that were never selected (Enter copies the top result).
+  // Copies by id in Rust (which also bumps the clip's copy count) — this is
+  // also called for clips that were never selected (Enter copies the top
+  // result), so content is never assumed to be loaded.
   copyClip: async (clip) => {
-    const content = await invoke<string | null>("get_clip_content", { id: clip.id });
-    if (!content) return;
-    invoke("copy_to_clipboard", { text: content });
+    const ok = await invoke<boolean>("copy_clip", { id: clip.id });
+    if (!ok) return;
+    set((s) => patchClip(s, clip.id, (c) => ({ ...c, copy_count: c.copy_count + 1 })));
     useToastStore.getState().show(`Copied — press ${modKey}V to paste`);
     invoke("hide_palette");
   },
@@ -138,13 +155,43 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
       searchResults: [],
       bulkSelected: new Set(),
       collectionFilter: null,
+      editing: false,
     }),
+
+  editing: false,
+
+  // Inline edit before paste: tweak a copy of the content, paste the tweaked
+  // version, leave the original clip untouched in history. Toggles — the
+  // same pencil/shortcut that opened the editor also closes it.
+  startEdit: () => {
+    const { selected, editing } = get();
+    if (selected) set({ editing: !editing });
+  },
+
+  cancelEdit: () => set({ editing: false }),
+
+  pasteEdited: (text) => {
+    set({ editing: false });
+    if (!text) return;
+    invoke("copy_to_clipboard", { text });
+    useToastStore.getState().show(`Copied edited version — press ${modKey}V to paste`);
+    invoke("hide_palette");
+  },
 
   toggleFavorite: (id) => {
     const target = get().history.find((c) => c.id === id) ?? get().selected;
     const next = !(target?.is_favorite ?? false);
     set((s) => patchClip(s, id, (c) => ({ ...c, is_favorite: next })));
     invoke("set_favorite", { id, favorite: next });
+  },
+
+  setExpiry: (id, expiresAt) => {
+    const previous = get().history.find((c) => c.id === id)?.expires_at ?? null;
+    set((s) => patchClip(s, id, (c) => ({ ...c, expires_at: expiresAt })));
+    invoke("set_expiry", { id, expiresAt }).catch(() => {
+      set((s) => patchClip(s, id, (c) => ({ ...c, expires_at: previous })));
+      useToastStore.getState().show("Couldn't update expiry");
+    });
   },
 
   removeEvicted: (ids) => {

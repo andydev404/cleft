@@ -66,6 +66,19 @@ pub fn start_monitor(app_handle: AppHandle) {
         loop {
             thread::sleep(Duration::from_millis(250));
 
+            // Expiry sweep — before the change-count early-out so temporary
+            // clips vanish on schedule even when nothing is being copied.
+            // A 500-row indexed-by-nothing scan every 250ms is negligible.
+            {
+                let state = app_handle.state::<DbState>();
+                let conn = state.0.lock().unwrap();
+                let expired = db::purge_expired(&conn).unwrap_or_default();
+                drop(conn);
+                if !expired.is_empty() {
+                    app_handle.emit("clips-evicted", expired).ok();
+                }
+            }
+
             // Update the "have we seen this pasteboard state" marker before
             // any blocking decision — see pasteboard.rs for why that order
             // matters.

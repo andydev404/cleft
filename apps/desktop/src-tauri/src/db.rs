@@ -27,6 +27,8 @@ pub struct ClipMetadata {
     pub workspace: String,
     pub collection: Option<String>,
     pub tags: Vec<String>,
+    pub copy_count: i64,
+    pub expires_at: Option<i64>,
 }
 
 #[derive(Serialize)]
@@ -104,7 +106,9 @@ pub fn init_db(app_handle: &AppHandle) -> rusqlite::Result<Connection> {
             is_favorite INTEGER NOT NULL DEFAULT 0,
             workspace TEXT NOT NULL DEFAULT 'Personal',
             collection TEXT,
-            tags TEXT NOT NULL DEFAULT ''
+            tags TEXT NOT NULL DEFAULT '',
+            copy_count INTEGER NOT NULL DEFAULT 0,
+            expires_at INTEGER
         )",
         (),
     )?;
@@ -113,6 +117,8 @@ pub fn init_db(app_handle: &AppHandle) -> rusqlite::Result<Connection> {
         "workspace TEXT NOT NULL DEFAULT 'Personal'",
         "collection TEXT",
         "tags TEXT NOT NULL DEFAULT ''",
+        "copy_count INTEGER NOT NULL DEFAULT 0",
+        "expires_at INTEGER",
     ] {
         add_column_if_missing(&conn, column_def);
     }
@@ -345,12 +351,35 @@ pub fn save_clip(
     source_app: &str,
     workspace: &str,
 ) -> rusqlite::Result<(ClipMetadata, Vec<String>)> {
-    let id = Uuid::new_v4().to_string();
     let timestamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap()
         .as_secs() as i64;
 
+    // Duplicate detection: re-copying content that's already in this
+    // workspace bumps the existing clip to the top (fresh timestamp)
+    // instead of inserting a twin. Its tags/collection/pin/copy-count
+    // survive — that's the point. Plain equality scan is fine at the
+    // 500-clip cap. The original capture context (source app, window,
+    // URL) is kept; only the time moves.
+    let existing: Option<String> = conn
+        .query_row(
+            "SELECT id FROM clips WHERE workspace = ?1 AND content = ?2",
+            (workspace, content),
+            |r| r.get(0),
+        )
+        .optional()?;
+    if let Some(id) = existing {
+        conn.execute(
+            "UPDATE clips SET timestamp = ?1 WHERE id = ?2",
+            (timestamp, &id),
+        )?;
+        let sql = format!("SELECT {CLIP_COLUMNS} FROM clips WHERE id = ?1");
+        let metadata = conn.query_row(&sql, [&id], row_to_metadata)?;
+        return Ok((metadata, Vec::new()));
+    }
+
+    let id = Uuid::new_v4().to_string();
     conn.execute(
         "INSERT INTO clips (id, content, content_type, source_app, timestamp, workspace) VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
         (&id, content, content_type.as_str(), source_app, timestamp, workspace),
@@ -375,6 +404,8 @@ pub fn save_clip(
             workspace: workspace.to_string(),
             collection: None,
             tags: Vec::new(),
+            copy_count: 0,
+            expires_at: None,
         },
         evicted,
     ))
@@ -405,6 +436,44 @@ pub fn set_favorite(conn: &Connection, id: &str, favorite: bool) -> rusqlite::Re
         (favorite, id),
     )?;
     Ok(())
+}
+
+// Counts copies *out of Cleft* (the Copy button, Enter, ⌘1-9) — not
+// captures. Over time the most-reached-for clips carry the highest counts.
+pub fn increment_copy_count(conn: &Connection, id: &str) -> rusqlite::Result<()> {
+    conn.execute(
+        "UPDATE clips SET copy_count = copy_count + 1 WHERE id = ?1",
+        [id],
+    )?;
+    Ok(())
+}
+
+// NULL = never expires. The monitor loop sweeps via purge_expired.
+pub fn set_expiry(conn: &Connection, id: &str, expires_at: Option<i64>) -> rusqlite::Result<()> {
+    conn.execute(
+        "UPDATE clips SET expires_at = ?1 WHERE id = ?2",
+        (expires_at, id),
+    )?;
+    Ok(())
+}
+
+// Deletes every clip whose expiry has passed and returns their ids so the
+// caller can emit clips-evicted (the frontend drops them from memory the
+// same way FIFO evictions are handled). Reuses delete_clips so the FTS
+// index stays in sync.
+pub fn purge_expired(conn: &Connection) -> rusqlite::Result<Vec<String>> {
+    let now = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_secs() as i64;
+    let ids: Vec<String> = {
+        let mut stmt =
+            conn.prepare("SELECT id FROM clips WHERE expires_at IS NOT NULL AND expires_at <= ?1")?;
+        let rows = stmt.query_map([now], |row| row.get::<_, String>(0))?;
+        rows.collect::<rusqlite::Result<Vec<_>>>()?
+    };
+    delete_clips(conn, &ids)?;
+    Ok(ids)
 }
 
 // The palette list only ever carries `preview` (max 200 chars). Full
@@ -454,11 +523,13 @@ pub fn row_to_metadata(row: &rusqlite::Row) -> rusqlite::Result<ClipMetadata> {
         workspace: row.get(8)?,
         collection: row.get(10)?,
         tags: parse_tags(&tags),
+        copy_count: row.get(11)?,
+        expires_at: row.get(12)?,
     })
 }
 
 pub const CLIP_COLUMNS: &str =
-    "id, content, content_type, source_app, window_title, url, timestamp, is_favorite, workspace, tags, collection";
+    "id, content, content_type, source_app, window_title, url, timestamp, is_favorite, workspace, tags, collection, copy_count, expires_at";
 
 pub fn get_recent_clips(
     conn: &Connection,
@@ -486,7 +557,8 @@ mod tests {
                 source_app TEXT NOT NULL DEFAULT '', window_title TEXT, url TEXT,
                 timestamp INTEGER NOT NULL, is_favorite INTEGER NOT NULL DEFAULT 0,
                 workspace TEXT NOT NULL DEFAULT 'Personal', collection TEXT,
-                tags TEXT NOT NULL DEFAULT ''
+                tags TEXT NOT NULL DEFAULT '',
+                copy_count INTEGER NOT NULL DEFAULT 0, expires_at INTEGER
             )",
             (),
         )
@@ -528,6 +600,95 @@ mod tests {
 
     fn recent(conn: &Connection) -> Vec<ClipMetadata> {
         get_recent_clips(conn, DEFAULT_WORKSPACE, 1000).unwrap()
+    }
+
+    #[test]
+    fn duplicate_content_bumps_existing_clip_instead_of_inserting() {
+        let conn = test_conn();
+        let first = save(&conn, "same thing");
+        save(&conn, "something else");
+
+        // Pin + tag the original so we can prove they survive the re-copy.
+        set_favorite(&conn, &first.id, true).unwrap();
+        add_tag(&conn, &first.id, "keep").unwrap();
+        // Backdate it so the bump is observable.
+        conn.execute(
+            "UPDATE clips SET timestamp = timestamp - 100 WHERE id = ?1",
+            [&first.id],
+        )
+        .unwrap();
+
+        let (bumped, evicted) = save_clip(
+            &conn,
+            "same thing",
+            ContentType::PlainText,
+            "another-app",
+            DEFAULT_WORKSPACE,
+        )
+        .unwrap();
+
+        assert_eq!(bumped.id, first.id);
+        assert!(bumped.is_favorite);
+        assert_eq!(bumped.tags, vec!["keep"]);
+        assert!(evicted.is_empty());
+
+        let clips = recent(&conn);
+        assert_eq!(clips.len(), 2, "no twin row was inserted");
+        assert_eq!(clips[0].id, first.id, "bumped clip is back on top");
+        // Original capture context is kept — only the timestamp moved.
+        assert_eq!(clips[0].source_app, "app");
+    }
+
+    #[test]
+    fn duplicate_detection_is_per_workspace() {
+        let conn = test_conn();
+        save(&conn, "shared text");
+        let (other, _) =
+            save_clip(&conn, "shared text", ContentType::PlainText, "app", "Work").unwrap();
+        assert_eq!(other.workspace, "Work");
+        let total: i64 = conn
+            .query_row("SELECT COUNT(*) FROM clips", [], |r| r.get(0))
+            .unwrap();
+        assert_eq!(total, 2, "same content in another workspace is a new clip");
+    }
+
+    #[test]
+    fn copy_count_increments() {
+        let conn = test_conn();
+        let clip = save(&conn, "reused snippet");
+        assert_eq!(clip.copy_count, 0);
+        increment_copy_count(&conn, &clip.id).unwrap();
+        increment_copy_count(&conn, &clip.id).unwrap();
+        assert_eq!(recent(&conn)[0].copy_count, 2);
+    }
+
+    #[test]
+    fn purge_expired_deletes_only_past_expiries() {
+        let conn = test_conn();
+        let gone = save(&conn, "temp token");
+        let stays = save(&conn, "keep me");
+        let later = save(&conn, "expires later");
+
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs() as i64;
+        set_expiry(&conn, &gone.id, Some(now - 5)).unwrap();
+        set_expiry(&conn, &later.id, Some(now + 3600)).unwrap();
+
+        let purged = purge_expired(&conn).unwrap();
+        assert_eq!(purged, vec![gone.id]);
+
+        let ids: Vec<String> = recent(&conn).into_iter().map(|c| c.id).collect();
+        assert!(ids.contains(&stays.id));
+        assert!(ids.contains(&later.id));
+        assert_eq!(ids.len(), 2);
+
+        // FTS row went with it.
+        let fts_count: i64 = conn
+            .query_row("SELECT COUNT(*) FROM clips_fts", [], |r| r.get(0))
+            .unwrap();
+        assert_eq!(fts_count, 2);
     }
 
     #[test]

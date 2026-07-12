@@ -30,6 +30,7 @@ export function ClipboardView() {
     selectClip,
     copyClip,
     toggleFavorite,
+    startEdit,
     bulkSelected,
     toggleBulkSelect,
     rangeBulkSelect,
@@ -108,6 +109,10 @@ export function ClipboardView() {
       e.preventDefault();
       const target = visible[Number(e.key) - 1];
       if (target) copyClip(target);
+    } else if ((isMac ? e.metaKey : e.ctrlKey) && e.key.toLowerCase() === "e") {
+      // Edit-before-paste on the highlighted clip.
+      e.preventDefault();
+      if (selected) startEdit();
     }
   }
 
@@ -218,6 +223,12 @@ export function ClipboardView() {
                   onSelect={() => selectClip(clip)}
                   onCopy={() => copyClip(clip)}
                   onDelete={() => confirmDeleteClip(clip)}
+                  onEdit={() => {
+                    // Re-selecting the same clip would reset the editor
+                    // (and lose the draft) — only select when moving.
+                    if (selected?.id !== clip.id) selectClip(clip);
+                    startEdit();
+                  }}
                   onMove={moveSelection}
                 />
               ))

@@ -49,6 +49,30 @@ pub fn set_favorite(id: String, favorite: bool, state: tauri::State<DbState>) {
     db::set_favorite(&conn, &id, favorite).ok();
 }
 
+// Copy an existing clip back out by id — the one path that also bumps its
+// copy count. Returns false if the clip vanished (e.g. evicted/expired).
+#[tauri::command]
+pub fn copy_clip(id: String, app: AppHandle, state: tauri::State<DbState>) -> bool {
+    let conn = state.0.lock().unwrap();
+    let Ok(Some(content)) = db::get_clip_content(&conn, &id) else {
+        return false;
+    };
+    db::increment_copy_count(&conn, &id).ok();
+    drop(conn);
+    app.clipboard().write_text(content).ok();
+    // Marks this write as "ours" so the capture monitor doesn't re-add it.
+    clipboard::mark_self_write();
+    true
+}
+
+// None clears the expiry ("never"); Some(unix_seconds) self-destructs the
+// clip at that time (swept by the monitor loop).
+#[tauri::command]
+pub fn set_expiry(id: String, expires_at: Option<i64>, state: tauri::State<DbState>) {
+    let conn = state.0.lock().unwrap();
+    db::set_expiry(&conn, &id, expires_at).ok();
+}
+
 #[tauri::command]
 pub fn list_workspaces(state: tauri::State<DbState>) -> Vec<db::Workspace> {
     let conn = state.0.lock().unwrap();
